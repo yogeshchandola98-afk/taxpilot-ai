@@ -1,16 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { getTaxWorkspace, saveTaxWorkspace, clearTaxWorkspace, TaxWorkspaceData } from '@/lib/sqlite-db';
 
-type TaxWorkspaceData = {
-  pan: string;
-  financialYear: string;
-  income: string;
-  deductions: string;
-  notes: string;
-};
-
-const storageKey = 'taxpilot-ai-local-workspace';
 const defaultData: TaxWorkspaceData = {
   pan: '',
   financialYear: '2025-26',
@@ -22,18 +14,24 @@ const defaultData: TaxWorkspaceData = {
 export function LocalTaxWorkspace() {
   const [data, setData] = useState<TaxWorkspaceData>(defaultData);
   const [savedAt, setSavedAt] = useState<string>('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const saved = window.localStorage.getItem(storageKey);
-    if (saved) {
-      setData({ ...defaultData, ...JSON.parse(saved) });
-    }
+    let mounted = true;
+    getTaxWorkspace().then((loaded) => {
+      if (!mounted) return;
+      setData(loaded);
+      setLoading(false);
+    });
+    return () => { mounted = false; };
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(storageKey, JSON.stringify(data));
-    setSavedAt(new Date().toLocaleString());
-  }, [data]);
+    if (loading) return;
+    saveTaxWorkspace(data).then(() => {
+      setSavedAt(new Date().toLocaleString());
+    });
+  }, [data, loading]);
 
   const taxableEstimate = useMemo(() => {
     const income = Number(data.income || 0);
@@ -45,13 +43,29 @@ export function LocalTaxWorkspace() {
     setData((current) => ({ ...current, [field]: value }));
   };
 
+  const handleClear = async () => {
+    await clearTaxWorkspace();
+    setData(defaultData);
+    setSavedAt('');
+  };
+
+  if (loading) {
+    return (
+      <section id="local-workspace" className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+        <div className="rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-6">
+          <p className="text-center text-slate-300">Loading SQLite workspace...</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="local-workspace" className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
       <div className="grid gap-6 rounded-[2rem] border border-cyan-300/20 bg-cyan-300/10 p-6 lg:grid-cols-[0.9fr_1.1fr]">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-200">Local-only data mode</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-cyan-200">SQLite local storage</p>
           <h2 className="mt-3 text-3xl font-bold">Your tax workspace stays in this browser</h2>
-          <p className="mt-4 text-slate-300">This starter saves profile notes and estimate inputs using browser localStorage on this laptop. No database or cloud storage is required for this demo mode.</p>
+          <p className="mt-4 text-slate-300">Data is stored in an in-browser SQLite database persisted via localStorage. No cloud database or backend is required for this demo mode. All data stays on this laptop.</p>
           <div className="mt-6 rounded-2xl bg-slate-950/60 p-4 text-sm text-slate-300">
             <p>Estimated taxable income</p>
             <p className="mt-2 text-3xl font-black text-white">₹{taxableEstimate.toLocaleString('en-IN')}</p>
@@ -82,7 +96,7 @@ export function LocalTaxWorkspace() {
             Notes and pending documents
             <textarea value={data.notes} onChange={(event) => updateField('notes', event.target.value)} className="min-h-28 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none focus:border-cyan-300" placeholder="Add reminders, deductions to verify, or document checklist" />
           </label>
-          <button onClick={() => setData(defaultData)} className="rounded-2xl border border-white/15 px-5 py-3 font-bold text-white">Clear local workspace</button>
+          <button onClick={handleClear} className="rounded-2xl border border-white/15 px-5 py-3 font-bold text-white">Clear local workspace</button>
         </div>
       </div>
     </section>
