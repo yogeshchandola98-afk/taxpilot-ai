@@ -42,6 +42,6 @@ Important: TaxPilot AI assists with tax preparation. It does not replace advice 
 
 This is a scaffolded starter project. Add credentials in local environment files only. Do not commit secrets.
 
-## Local Data Mode
+## Local SQLite Data Mode
 
-The Vercel-ready frontend currently includes a browser localStorage workspace. In this mode, demo tax profile inputs, estimates, and notes are saved only in the user's browser on this laptop/device. Clearing browser data or using another browser/device will remove or hide that local data. Do not treat localStorage as secure storage for production PAN, Aadhaar, bank details, or uploaded tax documents.
+The Vercel-ready frontend uses an in-browser SQLite database (via sql.js/WebAssembly) for structured local storage. The database is serialized to localStorage as a base64 SQLite file. Tables include tax_workspace, tax_documents, and deductions. All data stays on the user's laptop/device only. Clearing browser data or using another browser/device will remove the local data. Do not store production PAN, Aadhaar, bank details, or sensitive tax documents without proper backend security.

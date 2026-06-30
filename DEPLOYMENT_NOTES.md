@@ -6,23 +6,44 @@
 
 ## Live Frontend (Vercel)
 
-- Production URL: https://web-mugzxk1qa-yogeshchandola98-afks-projects.vercel.app
+- Production URL: https://web-idojofa67-yogeshchandola98-afks-projects.vercel.app
 - Alias: https://web-six-pi-53.vercel.app
 
-## Local Storage Mode
+## SQLite Local Storage
 
-The current frontend saves workspace data (PAN, income, deductions, notes) in the browser's localStorage only. Data never leaves the user's device. Reminder: clearing browser data or using another browser/device will remove the local data.
+The frontend now uses an in-browser SQLite database (via sql.js/WebAssembly) instead of plain localStorage. The database is persisted as a base64-encoded SQLite file in localStorage. This gives structured relational storage with tables for:
 
-## Subdomain Setup
+- `tax_workspace` (PAN, financial year, income, deductions, notes)
+- `tax_documents` (uploaded document metadata)
+- `deductions` (section-wise deductions)
 
-To connect a subdomain (e.g., taxpilot.yourdomain.com):
+All data stays in the browser on this laptop. No cloud database is used.
 
-1. Open the Vercel Dashboard for the project: https://vercel.com/yogeshchandola98-afks-projects/web
-2. Go to Settings > Domains.
-3. Add your custom domain or subdomain.
-4. Vercel will show the required DNS records (usually one CNAME pointing to cname.vercel-dns.com).
-5. Add the DNS record in your domain provider panel.
-6. Wait for DNS propagation, then confirm in Vercel.
+## Custom Domain Setup: taxpilotai.yogeshebook.online
+
+**Status**: The domain is currently assigned to another Vercel project.
+
+### Option A: Remove from other project (Recommended)
+
+1. Go to https://vercel.com/dashboard and find the other project that has `taxpilotai.yogeshebook.online`
+2. Open that project → Settings → Domains
+3. Remove `taxpilotai.yogeshebook.online`
+4. Then run this command from the project folder:
+   ```bash
+   cd apps/web
+   npx vercel domains add taxpilotai.yogeshebook.online
+   ```
+
+### Option B: DNS-Only Setup (if you can't remove from other project)
+
+1. Go to your domain provider (where yogeshebook.online is managed)
+2. Add a CNAME record:
+   - Name/Host: `taxpilotai`
+   - Value/Points to: `cname.vercel-dns.com`
+   - TTL: 3600 or Auto
+3. Go to https://vercel.com/yogeshchandola98-afks-projects/web/settings/domains
+4. Add `taxpilotai.yogeshebook.online`
+5. Vercel will verify the DNS and issue an SSL certificate
 
 ## Next Steps for Full Stack
 
