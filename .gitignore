@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+dist
+build
+.env
+.env.*
+!.env.example
+__pycache__
+*.pyc
+.pytest_cache
+.venv
+venv
+.DS_Store
+coverage
+htmlcov
+uploads
