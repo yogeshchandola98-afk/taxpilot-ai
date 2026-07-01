@@ -7,7 +7,7 @@ let sqlPromise: Promise<any> | null = null;
 
 async function getSql() {
   if (!sqlPromise) {
-    sqlPromise = initSqlJs({ locateFile: (file: string) => `https://sql.js.org/dist/${file}` });
+    sqlPromise = initSqlJs({ locateFile: (file: string) => `/${file}` });
   }
   return sqlPromise;
 }
@@ -182,7 +182,7 @@ export async function addDeduction(section: string, amount: number, description:
     $section: section,
     $amount: amount,
     $description: description,
-    $updatedAt: now,
+    $createdAt: now,
   });
   saveDbToStorage(db);
 }
